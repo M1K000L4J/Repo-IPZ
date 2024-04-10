@@ -47,7 +47,11 @@ void loop() {
   //ewentualna transformacja na wartośći bardziej użyteczne
   
   //transmisja do bazy danych
-  
+
+  //testowy odczyt wartości
+  Serial.print("Pozycja enkodera 1: ");
+  Serial.println(angle_1);
+  Serial.print("/n");
   delay(100); // Poczekaj przed kolejnym odczytem
 }
 
