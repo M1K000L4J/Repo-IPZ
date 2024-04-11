@@ -1,0 +1,43 @@
+// TWORZENIE BAZY DANYCH 
+
+CREATE TABLE motor (
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  angle integer
+);
+
+CREATE TABLE point (
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  x double,
+  y double,
+  z double,
+  angle double
+);
+
+CREATE TABLE path (
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  points_id integer,
+  FOREIGN KEY (points_id) REFERENCES point (id)
+);
+
+CREATE TABLE angle_point (
+  id integer PRIMARY KEY AUTO_INCREMENT,
+  motor_id integer,
+  FOREIGN KEY (motor_id) REFERENCES motor (id)
+);
+
+// DODAWANIE DANYCH DO TABEL 
+
+INSERT INTO motor (angle) VALUES (45);
+INSERT INTO motor (angle) VALUES (90);
+INSERT INTO point (x, y, z, angle) VALUES (3.0, 4.0, 5.0, 120.0);
+
+INSERT INTO point (x, y, z, angle) VALUES (1.0, 2.0, 3.0, 45.0);
+INSERT INTO point (x, y, z, angle) VALUES (2.0, 3.0, 4.0, 90.0);
+INSERT INTO point (x, y, z, angle) VALUES (3.0, 4.0, 5.0, 120.0);
+
+-- Dodanie obiektu typu motor
+INSERT INTO angle_point (motor_id) VALUES (motor_id);
+
+// PRZYKŁADOWY ODCZYT DANYCH Z TABELI 
+
+SELECT * FROM point;
