@@ -1,0 +1,81 @@
+import processing.serial.*;
+
+Serial myPort;  // Obiekt portu szeregowego
+float[] start_angles = {318.78, 117.33, 179.74};  // Początkowe wartości kątów
+float[] angles = {318.78, 117.33, 179.74};  // Aktualne kąty obrotu członów w stopniach
+float base_angle = 0; // Początkowy kąt obrotu podstawy, skierowany pionowo w górę
+int[] link_lengths = {100, 100, 100};  // Długości członów manipulatora
+
+void setup() {
+  size(800, 600);
+  String[] portList = Serial.list();  // Pobierz listę dostępnych portów szeregowych
+  printArray(portList);  // Wyświetl listę dostępnych portów w konsoli
+
+  // Sprawdź poprawny port w konsoli i ustaw poniżej odpowiedni port z listy
+  String portName = portList[0];  // Indeks portu może wymagać zmiany
+
+  myPort = new Serial(this, portName, 115200);  // Inicjalizacja portu szeregowego
+  myPort.bufferUntil('\n');  // Ustaw bufor na zakończenie linii
+
+  base_angle = -90;  // Ustawienie początkowego kąta obrotu podstawy w funkcji setup
+}
+
+void draw() {
+  background(255);  // Białe tło
+  
+  // Rysowanie podstawy manipulatora (czerwony)
+  pushMatrix();  // Zapisz macierz transformacji
+  translate(width / 2, height / 2);  // Przesunięcie początku układu współrzędnych
+  stroke(255, 0, 0);  // Czerwony kolor linii
+  strokeWeight(5);
+  
+  rotate(radians(base_angle));  // Obrót podstawy względem odczytanego kąta
+  line(0, 0, 50, 0);  // Rysowanie członu podstawy
+  popMatrix();  // Przywróć macierz transformacji
+
+  // Rysowanie manipulatora (niebieski)
+  pushMatrix();  // Zapisz macierz transformacji
+  translate(width / 2, height / 2);  // Przesunięcie początku układu współrzędnych
+  stroke(0, 0, 255);  // Niebieski kolor linii
+  strokeWeight(5);
+
+  float x = 0;
+  float y = 0;
+  float total_angle = -90;  // Ustawienie początkowego kąta na 90 stopni (pionowo)
+
+  for (int i = 0; i < 3; i++) {
+    if (i == 0 || i == 2) {
+      total_angle -= angles[i];  // Odwrócenie kierunku obrotu dla pierwszego i trzeciego członu
+    } else {
+      total_angle += angles[i];  // Dla drugiego członu obrót w normalnym kierunku
+    }
+    float angle_rad = radians(total_angle);
+    float new_x = x + link_lengths[i] * cos(angle_rad);
+    float new_y = y + link_lengths[i] * sin(angle_rad);
+    line(x, y, new_x, new_y);
+    x = new_x;
+    y = new_y;
+  }
+
+  popMatrix();  // Przywróć macierz transformacji
+}
+
+void serialEvent(Serial myPort) {
+  // Odczyt danych z portu szeregowego
+  String inString = myPort.readStringUntil('\n');  // Odczyt linii zakończonej znakiem nowej linii
+  if (inString != null) {
+    inString = trim(inString);  // Usunięcie białych znaków
+    String[] anglesStr = split(inString, ',');  // Podział odczytanej linii na części (kąty oddzielone przecinkami)
+    if (anglesStr.length >= 4) {  // Sprawdzenie, czy są dostępne co najmniej cztery kąty
+      try {
+        // Aktualizacja kątów z uwzględnieniem początkowych wartości
+        angles[0] = start_angles[0] - float(anglesStr[0]);
+        angles[1] = start_angles[1] - float(anglesStr[1]);
+        angles[2] = start_angles[2] - float(anglesStr[2]);
+        base_angle = -90 + float(anglesStr[3]);  // Aktualizacja kąta obrotu podstawy
+      } catch (NumberFormatException e) {
+        println("Błąd formatu danych: " + inString);
+      }
+    }
+  }
+}
